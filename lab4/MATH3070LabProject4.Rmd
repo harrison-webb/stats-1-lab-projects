@@ -1,0 +1,121 @@
+---
+title: "MATH 3070 Lab Project 4"
+author: "Harrison Webb"
+date: "September 20, 2021"
+output:
+  html_document:
+    toc: TRUE
+---
+4
+*Remember: I expect to see commentary either in the text, in the code with comments created using `#`, or (preferably) both! **Failing to do so may result in lost points!***
+
+## Problem 1 (Verzani problem 2.43)
+*The `time` variable in the `nym.2002` data set (**UsingR**) contains the time to finish the 2002 New York City Marathon for a random sample of the finishers.*
+
+1. *What percent ran the race in under 3 hours? (note that the data is in minutes)*
+
+```{r, include=FALSE}
+library(UsingR)
+```
+
+```{r}
+data(nym.2002)
+summary(nym.2002)
+percentageUnder3 = length(nym.2002$time[nym.2002$time/60 < 3])/length(nym.2002$time) #get values less than 3 from time column
+print(percentageUnder3)
+```
+
+2. *What is the time cutoff for the top 10%? The top 25%?*
+
+```{r}
+# Notice that these are the 90th and 75th percentiles, respectively
+# Your code here
+quantile(nym.2002$time, c(.75, .90))
+```
+
+3. *What time cuts off the bottom 10%?*
+
+```{r}
+# Your code here
+quantile(nym.2002$time, .1)
+```
+
+## Problem 2 (Verzani problem 4.1)
+*The data set `UScereal` (**MASS**) contains data on cereals sold in the United States in 1993. For this data set, answer the following questions using R (i.e. MUST answer questions using a code. Do not count by hand):*
+
+1. *How many rows does the data frame have? Columns?*
+```{r, inclued=FALSE}
+library(MASS)
+```
+
+```{r}
+# Your code here
+data("UScereal")
+summary(UScereal)
+
+#rows:
+length(UScereal[,1])
+
+#columns
+length(UScereal[1,])
+```
+
+2. *How many different manufacturers are included?*
+
+```{r}
+# Your code here
+length(unique(UScereal$mfr)) 
+```
+
+3. *How many vitamin categories are included?*
+
+```{r}
+# Your code here
+length(unique(UScereal$vitamins))
+```
+
+4. *How many cereals have a sugar level above 10?*
+
+```{r}
+# Your code here
+length(UScereal$sugars[UScereal$sugars > 10])
+```
+
+5. *What is the mean calorie value for cereals with more than 5 grams of fat? Less than or equal to 5?*
+
+```{r}
+# Your code here
+#mean calories for cereals with >5 grams of fat
+mean(UScereal$calories[UScereal$fat > 5])
+
+#mean calores for cereals with <=5 grams of fat
+mean(UScereal$calories[UScereal$fat <= 5])
+
+```
+
+6. *What is the mean calorie value for cereals on the middle shelf (2)?*
+
+```{r}
+# Your code here
+
+mean(UScereal$calories[UScereal$shelf == 2])
+```
+
+## Problem 3
+*Create a data frame containing the data in the following table:*
+
+| First    | Last      | Age |
+|----------|-----------|-----|
+| Marcus   | Holstein  | 23  |
+| Samuel   | Adams     | 56  |
+| Gus      | McPherson | 43  |
+| Margaret | Olsen     | 41  |
+| Zim      | Newbold   | 95  |
+
+```{r}
+# Your code here
+frame = data.frame("First" = c("Marcus", "Samuel", "Gus", "Margaret", "Zim"),
+                   "Last" = c("Holstein", "Adams", "McPherson", "Olsen", "Newbold"),
+                   "Age" = c(23, 56, 43, 41, 95))
+frame
+```

@@ -1,0 +1,100 @@
+---
+title: "MATH 3070 Lab Project 8"
+author: "Harrison Webb"
+date: "October 27, 2021"
+output:
+  html_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+*Remember: I expect to see commentary either in the text, in the code with comments created using `#`, or (preferably) both! **Failing to do so may result in lost points!***
+
+## Problem 1 (Verzani problem 3.2)
+*For the `michelson` (**MASS**) data set, produce a density plot comparing `Speed` between Experiments 1 and 2.*
+
+```{r, tidy=TRUE, error=TRUE}
+# Your code here
+library(ggplot2)
+library(MASS)
+data(michelson)
+p = data.frame(subset(michelson, Expt==1 | Expt==2)) #isolate data for experiments 1 and 2
+q <- ggplot(p, aes(x=Speed, fill=Expt)) + geom_density(alpha=.25) + ggtitle("Speed Density Plot Comparison for Experiments 1 and 2") 
+#the density values on the graphs seem low, but a rough estimate of the areas under the graphs works out
+# to around 1, so the math checks out I guess
+q
+```
+
+## Problem 2 (Verzani problem 3.4)
+*Three students record the time spent on homework per class. Their data is:*
+
+| Student| 1  | 2  | 3  | 4  | 5 |
+|:-------|---:|---:|---:|---:|--:|
+| Marsha | 25 | 0  | 45 | 90 | 0 |
+| Bill   | 30 | 30 | 30 | 30 |   |
+| Holly  | 15 | 0  | 90 | 0  |   |
+
+*Use a list to store these values. Then create a boxplot to compare. (You must use `boxplot()`'s formula interface for this problem.)*
+
+```{r, tidy=TRUE, error=TRUE}
+# Your code here
+name = c("Marsha", "Bill", "Holly")
+class1 = c(25,30,15)
+class2 = c(0,30,0)
+class3 = c(45,30,90)
+class4 = c(90,30,0)
+class5 = c(0, NA, NA)
+df = data.frame(name, class1, class2, class3, class4, class5)
+boxplot(class1, class2, class3, class4, class5, names=c("Class 1", "Class 2", "Class 3", "Class 4", "Class 5"), ylab="Time Spent on Homework")
+```
+
+## Problem 3 (Verzani problem 3.5)
+*A group of nursing students take turns measuring some basic assessments. Their data is:*
+
+|          | Temp | Pulse | Systolic | Diastolic |
+|----------|------|-------|----------|-----------|
+| Jackie   | 98.2 | 96    |  134     | 90        |
+| Florence | 98.6 | 56    |  120     | 80        |
+| Mildred  | 98.2 | 76    |  150     | 95        |
+
+*Create a data frame of these values. Will `plot()` and `boxplot()` produce the same graphic?*
+
+```{r, tidy=TRUE, error=TRUE}
+# Your code here
+library(ggplot2)
+name = c("Jackie", "Florence", "Mildred")
+Temp = c(98.2, 98.6, 98.2)
+Pulse = c(96, 56, 76)
+Systolic = c(134, 120, 150)
+Diastolic = c(90, 80, 95)
+
+df1 = data.frame(Temp, Pulse, Systolic, Diastolic) #include values only
+df2 = data.frame(name, Temp, Pulse, Systolic, Diastolic) #include name
+
+#Weird uninformative scatter plot thing?
+plot(Systolic~Pulse, data = df2, pch = name)
+
+#boxplot of values only
+boxplot(df1)
+
+#ggplot "scatter" plot
+p <- ggplot(df2) + geom_point(aes(x=Systolic, y=Diastolic, shape=factor(Pulse))) + facet_grid( ~ name)
+p
+```
+
+## Problem 4 (Verzani problem 3.8)
+*The second argument to `split` can be a list of factors. The result is that all interactions (possible combinations) are used for the groups. In the `ToothGrowth` data set, growth (`len`) is measured for two types of supplements (`supp`) and three doses (`dose`). Split this `len` value into 6 groups.*
+
+```{r, tidy=TRUE, error=TRUE}
+# Your code here
+#summary(ToothGrowth)
+#split length according to supplements and dosage
+supplement = ToothGrowth$supp
+dose = ToothGrowth$dose
+length = ToothGrowth$len
+l = split(length, f = list(supplement, dose), drop=TRUE) 
+print(l)
+
+
+```

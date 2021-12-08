@@ -1,0 +1,29 @@
+---
+title: "lab1"
+author: "Harrison"
+date: "8/26/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+New Block:
+```{r}
+2+3
+#this is a comment
+pi
+```
+
+Types of variables:
+```{r}
+num = 123
+char = "hi"
+vec = c(1,2,3)
+print(vec)
+charVec = c("hello", "world")
+is.numeric(num) #boolean operator
+is.numeric(as.numeric(char)) #type casting
+?mean #documentation
+```

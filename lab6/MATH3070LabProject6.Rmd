@@ -1,0 +1,46 @@
+---
+title: "MATH 3070 Lab Project 6"
+author: "Harrison Webb"
+date: "September 30, 2021"
+output:
+  html_document:
+    toc: TRUE
+---
+
+*Remember: I expect to see commentary either in the text, in the code with comments created using `#`, or (preferably) both! **Failing to do so may result in lost points!***
+
+## Problem 1 (Verzani problem 5.1)
+*For the `UScereal` (**MASS**) data set, create a scatter plot of `calories` modeled by `sugars` using the `shelf` variable to create different plot characters. Add a legend to indicate the shelf number. Is there any patterns? (Use base R plotting for this problem.)*
+
+```{r, tidy=TRUE, error=TRUE}
+library(MASS)
+plot(calories ~ sugars, data = UScereal, pch = shelf)
+legend(0, 400, c(1, 2, 3), pch = c(1, 2, 3), cex = 0.9)
+```
+
+## Problem 2 (Verzani problem 5.3)
+*For the data set `UScereal` (**MASS**) make a pairs plot of the numeric variables. Which correlation looks larger: fat and calories or fat and sugars?*
+
+```{r, tidy=TRUE, error=TRUE}
+# Your code here
+library(MASS)
+head(UScereal)
+cerealNumeric = UScereal[sapply(UScereal, is.numeric)]
+head(cerealNumeric)
+pairs(cerealNumeric[c("fat", "sugars", "calories")], col = UScereal$calories)
+
+```
+
+## Problem 3 (Verzani problem 5.4)
+*For the data set `batting` (**UsingR**) make a bubble plot of home runs hit (`HR`) modeled by hits (`H`) where the scale factor for each point is given by `sqrt(SO)/10`. Is there any story to be told by the size of the points? (You must use base R plotting for this problem.)*
+
+```{r, tidy=TRUE, error=TRUE}
+# Your code here
+library(UsingR)
+plot(HR~H, data = batting,
+     pch = 16, #filled bubble
+     col = rgb(0,0,0,.25),
+     cex = sqrt(SO/10) #idk if this is right
+)
+```
+

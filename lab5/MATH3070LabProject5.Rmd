@@ -1,0 +1,70 @@
+---
+title: "MATH 3070 Lab Project 5"
+author: "Harrison Webb"
+date: "September 29, 2021"
+output:
+  html_document:
+    toc: TRUE
+---
+
+*Remember: I expect to see commentary either in the text, in the code with comments created using `#`, or (preferably) both! **Failing to do so may result in lost points!***
+
+
+## Problem 1 (Verzani problem 4.7)
+*Use the `subset()` function to return a data frame made from the `Cars93` (**MASS**) data frame consisting only of `non-USA` cars in origin, with 4 cylinders and a maximum price of \$15,000 or less.*
+```{r, include=FALSE}
+library(MASS)
+```
+
+```{r, tidy=TRUE,error=TRUE}
+# Your code here
+data("Cars93")
+#summary(Cars93)
+subset(Cars93, select = c(Make, Type, Max.Price), subset = Origin == "non-USA" & Cylinders == 4 & Max.Price <= 15)
+```
+
+## Problem 2 (Verzani problem 4.10)
+*Find the standard deviation of each variable in the `mtcars` data set.*
+
+```{r, tidy=TRUE, error=TRUE}
+# Your code here
+data(mtcars)
+sapply(mtcars, sd) #use sapply to apply standard deviation function to each column in the data set
+```
+
+## Problem 3 (Verzani problem 4.11)
+*Find the standard deviation for each numeric variable in `Cars93` (**MASS**).*
+
+```{r, tidy=TRUE, error=TRUE}
+# Your code here
+data("Cars93")
+#summary(Cars93)
+numericCols = Cars93[sapply(Cars93, is.numeric)] #get columns representing numeric variables
+#summary(numericCols)
+sapply(numericCols, sd) #apply sd fuction to all columns
+```
+
+## Problem 4
+*You can find data describing various statistics on 2012 Olympic participating nations such as population and medal counts in the comma-separated value file (olympic-medals2012.csv). Load this dataset into R in a data frame and do the following:*
+
+1. *Create a new data frame containing only the country's ISO code (a three-letter code for the country; USA is the United States of America, and DZA Algeria), name, population, and counts for gold, silver, and bronze. This data frame should be called `olympic2012`.*
+
+```{r, tidy=TRUE, error=TRUE}
+# Your code here
+readfile = read.csv("olympic-medals2012.csv") #read csv file
+olympic2012 = subset(readfile, select = c(ISO, Country.name, pop.2010, Gold, Silver, Bronze)) #select specific columns
+olympic2012
+
+```
+
+2. *What proportion of countries earned no medals? Answer this using `olympic2012`.*
+
+```{r, tidy=TRUE, error=TRUE}
+# Your code here
+numCountries = length(olympic2012[,1])
+noMedals = subset(olympic2012, subset = Gold + Silver + Bronze == 0)
+numNoMedals = length(noMedals[,1])
+
+numNoMedals / numCountries #proportion of countries that earned no medals
+```
+

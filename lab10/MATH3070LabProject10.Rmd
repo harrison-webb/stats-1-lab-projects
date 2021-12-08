@@ -1,0 +1,127 @@
+---
+title: "MATH 3070 Lab Project 10"
+author: "Harrison Webb"
+date: "November 10, 2021"
+output:
+  html_document:
+    toc: TRUE
+---
+
+*Remember: I expect to see commentary either in the text, in the code with comments created using `#`, or (preferably) both! **Failing to do so may result in lost points!***
+
+*Since this assignment involves simulation, I set the seed to the following in order to get the same results:*
+
+```{r}
+set.seed(5292016)
+```
+
+## Problem 1 (Verzani problem 6.2)
+*Roll a pair of dice. Let $X$ be the largest value shown on the two dice. Use `sample()` to simulate five values of $X$.*
+
+```{r, echo=FALSE}
+# This code block resets the random seed in order to get consistent results. This will be hidden in the final document, but YOU MUST NOT CHANGE THIS!
+set.seed(5292016)
+```
+
+```{r, error=TRUE, tidy=TRUE}
+# Your code here
+rolls = replicate(2, sample(1:6, 5, replace=TRUE)) #simulate the rolling of two dice
+result = pmax(rolls[,1], rolls[,2]) #select the larger value from each roll
+result
+```
+
+## Problem 2 (Verzani problem 6.3)
+*The National Basketball Association lottery to award the first pick in the draft is held by putting 1,000 balls into a hopper and selecting one. The teams with the worst records the previous year have a greater proportion of the balls. The data set `nba.draft` (**UsingR**) contains the ball allocation for the year 2002. Use `sample()` with Team as the data vector and `prob=Balls` to simulate the draft. What team do you select? Repeat until Golden State is chosen. How long did it take?*
+
+```{r, echo=FALSE}
+# This code block resets the random seed in order to get consistent results. This will be hidden in the final document, but YOU MUST NOT CHANGE THIS!
+set.seed(5292016)
+```
+
+```{r, include=FALSE}
+library(UsingR)
+```
+
+```{r, error=TRUE, tidy=TRUE}
+# Your code here
+sample(nba.draft$Team, 1, prob=nba.draft$Balls)
+#Chicago was the first team selected, and it took 5 trials until Golden State was chosen
+```
+
+## Problem 3 (Verzani problem 6.23)
+*Find the quintiles ($0^{\text{th}}$, $20^{\text{th}}$, $40^{\text{th}}$, $60^{\text{th}}$, $80^{\text{th}}$, and $100^{\text{th}}$ quantiles/percentiles) of the standard Normal distribution (this is a normal distribution with mean 0 and standard deviation 1).*
+
+```{r, error=TRUE, tidy=TRUE}
+# Your code here
+p0 = qnorm(0, mean=0, sd=1) #0th percentile (-infinity)
+p20 = qnorm(.2, mean=0, sd=1) #20th percentile
+p40 = qnorm(.4, mean=0, sd=1) #40th percentile
+p60 = qnorm(.6, mean=0, sd=1) #60th percentile
+p80 = qnorm(.8, mean=0, sd=1) #80th percentile
+p100 = qnorm(1, mean=0, sd=1) #100th percentile (+infinity)
+
+#0th percentile
+p0
+
+#20th percentile
+p20
+
+#40th percentile
+p40
+
+#60th percentile
+p60
+
+#80th percentile
+p80
+
+#100th percentile
+p100
+```
+
+## Problem 4
+*Consider flipping a fair coin $n$ times and counting the number of time the coin lands heads-up. This is a binomial random variable, but it turns out that as $n$ gets large, this distribution can be approximated with a Normal distribution, where the mean is $0.5 \times n$ and the standard deviation is $0.5 \times \sqrt{n}$. We know this thanks to the central limit theorem. When flipping 3, 5, and 20 times, plot the pmf of the binomial random variable with the appropriate parameters (you may use my function `plot_pmf()` from the lecture notes). Superimpose on each of these plots the density curve of the Normal distribution with the appropriate parameters (use the `lines()` function to do so; an example for doing this is in the lecture notes). What do you notice? When does the approximation appear best?*
+
+```{r, error=TRUE, tidy=TRUE}
+plot_pmf <- function(q, p) {
+    # This will plot a series of horizontal lines at q with height p, setting
+    # the y limits to a reasonable heights
+    plot(q, p, type = "h", xlab = "x", ylab = "probability", main = "pmf", ylim = c(0, 
+        max(p) + 0.1))
+    # Usually these plots have a dot at the end of the line; the point function
+    # will add these dots to the plot created above
+    points(q, p, pch = 16, cex = 2)
+}
+```
+
+
+
+```{r, error=TRUE, tidy=TRUE}
+
+#3 flips. n=3, mean=1.5, sd=.5sqrt(3)
+mean3 = .5*3
+sd3 = .5*sqrt(3)
+norm_q3 <- 0:3
+norm_pdf3 <- dnorm(norm_q3, mean = mean3, sd = sd3)
+plot_pmf(norm_q3, norm_pdf3)
+#overlay normal curve
+lines(seq(0,3,length=100), dnorm(seq(0,3,length=100), mean = mean3, sd = sd3), col = "black")
+
+#5 flips. n=5, mean=2.5, sd=.5sqrt(5)
+mean5 = .5*5
+sd5 = .5*sqrt(5)
+norm_q5 <- 0:5
+norm_pdf5 <- dnorm(norm_q5, mean = mean5, sd = sd5)
+plot_pmf(norm_q5, norm_pdf5)
+#overlay normal curve
+lines(seq(0,5,length=100), dnorm(seq(0,5,length=100), mean = mean5, sd = sd5), col = "black")
+
+#20 flips. n=20, mean=10, sd=.5sqrt(20)
+mean20 = .5*20
+sd20 = .5*sqrt(20)
+norm_q20 <- 0:20
+norm_pdf20 <- dnorm(norm_q20, mean = mean20, sd = sd20)
+plot_pmf(norm_q20, norm_pdf20)
+#overlay normal curve
+lines(seq(0,20,length=100), dnorm(seq(0,20,length=100), mean = mean20, sd = sd20), col = "black")
+```

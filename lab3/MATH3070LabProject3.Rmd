@@ -1,0 +1,107 @@
+---
+title: "MATH 3070 Lab Project 3"
+author: "Harrison Webb"
+date: "September 15, 2021"
+output:
+  html_document:
+    toc: TRUE
+---
+
+*Remember: I expect to see commentary either in the text, in the code with comments created using `#`, or (preferably) both! **Failing to do so may result in lost points!***
+
+## Problem 1
+*The `faithful` (Package **datasets** is built in Base R) dataset records the waiting time between eruptions and the duration of the eruption for the Old Faithful geyser in Yellowstone National Park. Find the mean waiting time, median waiting time, longest waiting time and shortest waiting time in minutes.*
+
+```{r}
+data("faithful")
+summary(faithful)
+
+#mean of waiting times
+mean(faithful$waiting) 
+
+#median of waiting times
+median(faithful$waiting) 
+
+#max
+max(faithful$waiting)
+
+#min
+min(faithful$waiting)
+```
+
+## Problem 2 (Verzani problem 2.34)
+*The data set `DDT` (**MASS**) contains independent measurements of the pesticide DDT on kale. Make a histogram and a boxplot of the data. From these, estimate the mean and standard deviation. Check your answers with the appropriate functions.*
+
+```{r, include=FALSE}
+library(MASS)
+```
+
+```{r}
+data("DDT")
+?DDT
+par(mfrow=c(1,2))
+hist(DDT, main="Concentration Frequency of DDT in kale", xlab="Concentration (ppm)", col="seagreen")
+boxplot(DDT, main="Boxplot DDT Concentration", col="seagreen")
+
+#estimate of mean: 3.9
+#estimate of standard deviation: 2
+mean(DDT) #actual: 3.328
+sd(DDT) #actual: 0.437
+
+#now include mean on chart
+par(mfrow=c(1,2))
+hist(DDT, main="Concentration Frequency of DDT in kale", xlab="Concentration (ppm)", col="seagreen")
+abline(v = mean(DDT), col = "blue", lwd = 2)
+boxplot(DDT, main="Boxplot DDT Concentration", col="seagreen")
+
+```
+
+## Problem 3 (Verzani problem 2.32 modified)
+*Write a function 'density_compare()' that fits a density estimate to a given data set and plots that estimate along with the appropriate histogram of the given data set. Try your function with the data set `pi2000` (**UsingR**). Why might you want to add an argument like `breaks = 0:10-.5` to `hist()`? (Hint: read the documentation of `hist()` to see what setting this argument does). Feel free to add other parameters to your plot methods to see how they can be changed.*
+
+```{r, include=FALSE}
+library(UsingR)
+```
+
+```{r}
+density_compare = function(x){
+  hist(x, main=paste("Distribution of ", deparse(substitute(x)), " Data Set"),
+       freq=FALSE, breaks=0:10-.5)
+  lines(density(x), col="blue")
+}
+
+density_compare(pi2000)
+```
+
+## BONUS (Verzani problem 2.25)
+*Write a function `isprime()` that checks if a number $x$ is prime by dividing $x$ by all the values in $2, ..., x - 1$ then checking to see if there is a remainder of 0. The expression `a %% b` returns the remainder of `a` divided by `b`.*
+
+```{r}
+isprime = function(x){
+  results = x%%seq(2, x-1)
+  if(0%in%results){
+    print("Input is not prime")
+  }
+  else{
+    print("Input is prime")
+  }
+}
+
+isprime(1703)
+```
+
+*You do not need to check all numbers from 2 to $x - 1$ to see if a number is prime. What is the largest you would need to go for an arbitrary $x$? Create a new function, `isprime2()`, that implements this better (yet still slow) method.*
+
+```{r}
+isprime2 = function(x){
+  results = x%%seq(2, sqrt(x)) #going past sqrt(x) will just result in checking already-checked factor pairs
+  if(0%in%results){
+    print("Input is not prime")
+  }
+  else{
+    print("Input is prime")
+  }
+}
+
+isprime(17)
+```

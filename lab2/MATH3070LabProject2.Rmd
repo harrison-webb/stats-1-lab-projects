@@ -1,0 +1,72 @@
+---
+title: "MATH 3070 Lab Project 2"
+author: "Harrison Webb"
+date: "September 2, 2021"
+output:
+  html_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+*Remember: I expect to see commentary either in the text, in the code with comments created using `#`, or (preferably) both! **Failing to do so may result in lost points!***
+
+## Problem 1 (Verzani problem 1.7)
+*The `rivers` (**UsingR**) or any other data set is available after loading the package **UsingR**. Load the package, and inspect the data set. Scan the values to find the largest one.*
+
+```{r, include=FALSE}
+library("UsingR")
+```
+```{r}
+data(rivers) #load dataset
+max(rivers) #use max function to find largest value
+```
+
+
+## Problem 2 (Verzani problem 2.4)
+*Create the following sequences, using `:`, `seq()`, or `rep()` as appropriate:*
+
+1. `"a" "a" "a" "a" "a" "a"`
+
+```{r}
+rep("a", 6) #repeat "a" 6 times
+```
+
+2. `1 3 ... 99` *(the odd numbers)*
+
+```{r}
+seq(1, 99, by=2) #start at 1, go to 99, increment by 2 to list odd numbers
+```
+
+3. `1 1 1 2 2 2 3 3 3`
+
+```{r}
+rep(c(1,2,3), each=3) #repeat each element in (1,2,3) 3 times
+```
+
+## Problem 3 (Verzani problem 2.3)
+*Let our small data set be* `2 5 4 10 8`.
+
+1. *Enter this data into a data vector `x`.*
+
+```{r}
+x = c(2,5,4,10,8)
+```
+
+2. *Find the square of each number.*
+
+```{r}
+x^2
+```
+
+3. *Subtract 6 from each number.*
+
+```{r}
+x - 6
+```
+
+4. *Subtract 9 from each number and then square the answer.*
+
+```{r}
+(x-9)^2
+```

@@ -1,0 +1,152 @@
+---
+title: "MATH 3070 Lab Lecture 9"
+author: "Conor Tillinghast"
+date: "October 25, 2018"
+output:
+  pdf_document:
+    toc: TRUE
+---
+
+## Paired Data
+So far we have examined data that came from two independent samples. They may measure the same thing, but they should still be regarded as distinct. Paired data is an entirely separate case. With paired data, two variables were recorded for one observation. Usually we want to know what the relationship between the two variables is, if any.
+
+A good first step to studying paired data (in fact, you should consider it a *necessary* step!) is to visualize the relationship between the variables with a scatterplot. You could do so with `plot(y ~ x, data = d)`, where `x` is the variable plotted along the horizontal axis of a scatterplot, `y` the variable plotted along the vertical axis, and `d` the data set containing `x` and `y` (if applicable).
+
+The data set `fat`contains various measurements from people's bodies. Let's examine the relationship between height and weight with a scatterplot.
+
+```{r, tidy = TRUE}
+library(UsingR)
+plot(weight ~ height, data = fat)
+# Using a scatterplot, we immediately identified an outlier, an individual that, while not necessarily having an unusual weight, is much shorter than usual (probably an individual with dwarfism). There is also an individual who is unusually heavy, though having a typical height. We filter out those poiints in another plot
+plot(weight ~ height, data = fat, subset = height > 60 & weight < 300)
+```
+
+It's a good idea to plot data before numerically analyzing it. Outliers and non-linear relationships between variables are often easy to identify graphically, but can hide in numeric summaries.
+
+### Correlation
+The **correlation** between two variables measures the strength of their relationship. Without discussing how correlation is computed, let $r$ represent the correlation between two variables. It is always true that $-1 \leq r \leq 1$. If $r = 0$, there is no *linear* relationship between the variables (there may still be a relationship, just not a linear one). If $|r| = 1$, there is a perfect linear relationship between the variables; if plotted in a scatterplot, the variables would fall along a perfectly straight line. $\text{sign}(r)$ indicates the direction of the relationship. If $r > 0$, there is a positive relationship between the variables; as one variable increases, the other also tends to increase. If $r < 0$, there is a negative relationship between the variables; as one variable increases, the other tends to decrease.
+
+No real-world data set has a correlation that is perfectly zero, one, or negative one (unless engineered). A rule of thumb is that if $0 \leq |r| < .3$, there is no correlation. If $.3 \leq |r| < .7$, the correlation is weak. If $|r| \geq .7$, the correlation is strong.
+
+Some illustrations of different correlations follow.
+
+```{r, echo=FALSE}
+library(MASS)
+dat1 <- mvrnorm(100, mu = c(0,0), Sigma = rbind(c(1,0),c(0,1)))
+plot(dat1, xlab = "x", ylab = "y", main = "r = 0")
+dat2 <- mvrnorm(100, mu = c(0,0), Sigma = rbind(c(1,.3),c(.3,1)))
+plot(dat2, xlab = "x", ylab = "y", main = "r = 0.3")
+dat3 <- mvrnorm(100, mu = c(0,0), Sigma = rbind(c(1,.7),c(.7,1)))
+plot(dat3, xlab = "x", ylab = "y", main = "r = 0.7")
+dat4 <- mvrnorm(100, mu = c(0,0), Sigma = rbind(c(1,1),c(1,1)))
+plot(dat4, xlab = "x", ylab = "y", main = "r = 1")
+```
+
+Let's compute a correlation. The `cor()` function will compute correlation for a data set, taking two data vectors `cor(x, y)` and computing the correlation between `x` and `y`.
+
+```{r, tidy = TRUE}
+# The correlation of height and weight
+cor(fat$height, fat$weight)
+```
+
+Remember, we are computing *linear* correlation! There could be a linear correlation of 0, but a perfect non-linear correlation!
+
+```{r}
+x <- (-10):10
+y <- x^2
+plot(x, y)
+cor(x, y)
+```
+
+One thing a researcher must always bear in mind when studying the correlation between variables is that **correlation is not causation!** A causal relationship between the two variables in study may be responsible for the correlation, but so could a causal relationship between each individual variable and a third, unobserved variable (what we term a **latent variable**), a causal relationship running in the opposite direction of the one observed ($y$ causes $x$ rather than $x$ causing $y$), or a complex confounding relationship involving feedback loops between the variables observed and unobserved latent variables ($x$ causes $y$, which in turn causes $x$, while also being caused by unobserved $z$ while also causing $z$). Additionally, if there is a time component, a correlation between two variables may be strong for no reason other than both variables trend (this may translate simply into time being a latent, unaccounted-for variable, and both variables need to be detrended).
+
+The website [Spurious correlations](http://www.tylervigen.com) contains many strong correlations that clearly are not causal (though they are quite amusing). How do people discover these? The best explanation may be that when a very large number of variables are observed, correlations *will* appear. Think of it this way: if every pair of variables in a data set, generated independently, have a probability $\epsilon(n)$ of producing data sets that are not correlated for data sets of size $n$, the probability that no correlations appear is roughly $\left(\epsilon(n)\right)^{{k \choose 2}}$ (keep in mind that ${k \choose 2}$ grows very quickly in $k$). This number is approaching zero very fast, so it's highly unlikely that no correlations at all will appear in the data set. The situation is not hopeless, of course; increasing the sample size $n$ will increase $\epsilon(n)$ and make observing misleading sample correlations less likely. But the point remains; it's easier to find *some* correlation in data sets that track lots of variables than in data sets that track only a handful, given the same sample size.
+
+As an example, I generated a small data set using random variables I know are not correlated, yet the plot demonstrates that sample correlations still manage to appear, even large ones.
+
+```{r,echo=FALSE}
+set.seed(60818)
+panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...) {
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(0, 1, 0, 1))
+  r <- abs(cor(x, y))
+  txt <- format(c(r, 0.123456789), digits = digits)[1]
+  txt <- paste0(prefix, txt)
+  if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
+  text(0.5, 0.5, txt, cex = cex.cor * r)
+}
+
+pairs(mvrnorm(5, rep(0, times = 10), diag(nrow = 10)), lower.panel = panel.cor)
+```
+
+In general, identifying causality between variables is not easy. There are methods for doing so (they are outside the scope of this course), but bear in mind that they usually must inject additional knowledge, be it about the experiment and data collection method or subject matter knowledge, in order to identify causality. Mathematics alone is not sufficient, and no single statistical analysis may have the final say on a subject. It may take numerous replications and permutations of methodology along with clever argument and domain area knowledge to establish a causal link.
+
+### Trend Lines
+A trend line is a "best fit" line passing through data in a data set that shows what linear relationship between data tends to prevail throughout the data set.  Without going into detail about how this line is computed, the trend line typically computed minimizes the squared (vertical) distance of each data point to the line (this distance being called the **residual** or **error**).
+
+We investigate here lines of the form $\hat{y_i} = \beta_0 + \beta_1 x_i$, where $\hat{y_i}$ is the value of the $y$ variable predicted by the trend line for the value $x_i$. $\beta_0$ is the $y$-intercept of the trend line, and $\beta_1$ the slope of the trend line. We can compute the coefficients of the trend line using the R function `lm(y ~ x, data = d)`, where `y` is the variable being predicted (you may think "dependent variable"), `x` is the predicting variable (think "independent variable"), and `d` is the data set containing both `x` and `y` (if applicable). We can save the output of `lm()` by using a call akin to `fit <- lm(y ~ x, data = d)`, and we can extract the coefficients of the trend line from `fit` using `coefficients(fit)` or simply accessing them directly with `fit$coefficients`.
+
+Below I demonstrate fitting a trend line to the height and weight data.
+
+```{r, tidy = TRUE}
+hw_fit <- lm(weight ~ height, data = fat)
+coefficients(hw_fit)
+```
+
+We can see the model, but we would like to plot the relationship on a line. After making a plot with `plot()`, we can add a trendline with `abline(fit)`, which adds the trend line stored in `fit` to the plot.
+
+```{r, tidy = TRUE}
+plot(weight ~ height, data = fat)
+abline(hw_fit)
+# Least-squares regression is sensitive to outliers, so let's compute the trend line when the outliers are left out
+hw_fit2 <- lm(weight ~ height, data = fat, subset = height > 50 & weight < 300)
+plot(weight ~ height, data = fat, subset = height > 50 & weight < 300)
+abline(hw_fit2, col = "red", lwd = 2)
+```
+
+Computation and analysis of trends is a topic discussed much more extensively in MATH 3080, and so I end the discussion here.
+
+## Categorical Bivariate Data
+So far we have examined only relationships in quantitative data. We can also examine relationships between categorical data.
+
+Numerically we analyze categorical data with tables of counts, with each cell of the table containing a count of the observations having a particular combination of the categorical variables in question. We usually want to consider the joint distribution of the variables in question as well as the margins of the tables. The `xtabs()` function can allow us to quickly construct join distribution tables using formula notation. `xtabs(~ x + y, data = d)` will construct a table depending on variables `x` and `y`, with data stored in `d`. One could extend this table to as many variables as desired; for example, `xtabs(~ x + y + z, data = d)` constructs a three-dimensional array examining the relationship between variables `x`, `y`, and `z`. When creating such an array, you may want to use the `ftable()` function for viewing the information in the table in a more legible format. For example, if we saved the results of the earlier `xtabs()` output in a variable `tab`, `ftable(tab, row.vars = 2, col.vars = c(1, 3))` will create a table where the variable associated with dimension 2 (`y`) will be shown in rows, and the variables associated with dimensions 1 and 3 (`x` and `z`) are shown in the columns.
+
+I demonstrate constructing tables this way below, exploring the `Cars93` (**MASS**) data set.
+
+```{r, tidy = TRUE}
+# Two-way table exploring origin and type
+tab1 <- xtabs(~ Origin + Type, data = Cars93)
+tab1
+# A three-way table
+tab2 <- xtabs(~ Origin + Type + Cylinders, data = Cars93)
+# The following output is hard to parse
+tab2
+# This is easier to read
+ftable(tab2, row.vars = 2, col.vars = c(1, 3))
+# A four-way table
+tab3 <- xtabs(~ Origin + Type + Cylinders + Man.trans.avail, data = Cars93)
+ftable(tab3, row.vars = c(2, 4), col.vars = c(1, 3))
+```
+
+When faced with a table, one often wishesw to know the marginal distributions, which is the distribution of just one of the variables without any knowledge of any other variables. We can obtain the margins of the tables produced by `xtabs()` with `margin.table()`. The call `margin.table(tbl, margin = i)` will find the marginal distribution of `tbl` for margin `i`, which may be 1 or 2 for a two-way table (corresponding to rows and columns, respectively), but could be higher for more complex tables. I demonstrate `margin.table()` below:
+
+```{r}
+margin.table(tab3, margin = 1)
+margin.table(tab3, margin = 2)
+margin.table(tab3, margin = 3)
+```
+
+We have a few options for visualizing data in a two-way table (tables with more dimensions would be more complex and more demanding from visualization techniques). One way would be with a stacked bar plot, where the height of the bar corresponds to the marginal distribution of one variable and sub-bars denote the breakdown for the second category. Better though would be side-by-side bar plots, which don't stack the breakdown categories one atop the other but instead place them side by side yet in close proxomity. `barplot()` can create such plots.
+
+```{r}
+barplot(tab1)
+barplot(tab1, beside = TRUE)
+```
+
+Another option is a **mosaic plot**, which shows the frequency of each combination of variables as the size of rectangles. This can be created in R using the function `mosaicplot()`, as below.
+
+```{r}
+mosaicplot(tab1)
+mosaicplot(tab2)
+mosaicplot(tab3)
+```

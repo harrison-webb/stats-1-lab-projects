@@ -1,0 +1,47 @@
+---
+title: "MATH 3070 Lab Project 1"
+author: "Harrison Webb"
+output:
+  html_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+*Remember: I expect to see commentary either in the text, in the code with comments created using `#`, or (preferably) both! **Failing to do so may result in lost points!***
+
+## Problem 1 (Verzani problem 1.1)
+*Use R as you would a calculator to find numeric answers to the following:*
+
+1. $1 + 2(3 + 4)$
+
+```{r}
+1 + (2*(3+4))
+```
+
+2. $4^3 + 3^{2 + 1}$
+
+```{r}
+(4^3) + 3^(2+1)
+```
+
+## Problem 2 (Verzani problem 1.4)
+*Use R to compute the following:*
+
+$$\frac{0.25 - 0.2}{\sqrt{0.2(1-0.2)/100}}$$
+
+```{r}
+(.25-.2)/(sqrt((.2*(1-.2))/100)) #using a bunch of separating parentheses just to be safe
+```
+
+## Problem 3 (Verzani problem 1.5)
+*Assign the numbers 2 through 5 to different variables, then use the variables to multiply all the values.*
+
+```{r}
+a = 2
+b = 3
+c = 4
+d = 5
+a*b*c*d
+```
+

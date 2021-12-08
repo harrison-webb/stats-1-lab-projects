@@ -1,0 +1,94 @@
+---
+title: "MATH 3070 Lab Project 13"
+author: "Harrison Webb"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    toc: TRUE
+---
+
+*Remember: I expect to see commentary either in the text, in the code with comments created using `#`, or (preferably) both! **Failing to do so may result in lost points!***
+
+## Problem 1 (Verzani problem 9.14)
+*The data set `normtemp` (**UsingR**) contains measurements of 130 healthy, randomly selected individuals. The variable `temperature` contains normal body temperature. Does the data appear to come from a Normal distribution? If so, perform a $t$-test to see if the commonly assumed value of 98.6 degrees fahrenheit is correct. (Studies have suggested that 98.2 degrees fahrenheit is more accurate.)*
+```{r, include=FALSE}
+library(UsingR)
+```
+
+```{r, tidy = TRUE}
+
+#First lets check if data appears to be normally distributed
+qqnorm(normtemp$temperature)
+qqline(normtemp$temperature)
+#The data appear normally distributed, so we can continue with our t-test
+
+#Two sided test; H_0: mu = 98.6, H_a: mu != 98.6
+t.test(normtemp$temperature, mu = 98.6)
+#We get an extremely small p-value of 2.411 * 10^-7, so we reject the null hypothesis 
+
+#Lets also try a one sided test; H_0: mu = 98.6, H_a: mu < 98.6
+t.test(normtemp$temperature, mu = 98.6, alternative = "less")
+#Again, the resulting p-value is extremely small and supports rejecting the null hypothesis
+```
+
+## Problem 2 (Verzani problem 9.4)
+*In the United States in 2007, the proportion of adults age 21-24 who had no medical insurance was 28.1 percent. A survey of 75 recent college graduates in this age range finds that 40 percent are without insurance. Does this support a difference from the nationwide proportion? Perform a test of significance and report the p-value. Is it significant? (Perform this test "by hand", not using `prop.test()`.)*
+
+```{r, tidy = TRUE}
+# Your code here
+#H_0: p = p_0
+#H_a: p != p_0
+
+p_0 = .281 #population proportion
+p = .4 #sample proportion
+n = 75 #sample size
+
+#calculate test statistic
+z = (p - p_0) / sqrt((p_0 * (1-p_0))/n )
+z
+
+#calculate p value based on test statistic
+pval = 2 * (1-pnorm(abs(z)))
+pval
+```
+We see that our calculated test statistic is 2.29, which corresponds to a p-value of 0.02.
+In order to reject the null hypothesis, we would need our level of significance set to a>=0.02
+While the p-value is not overwhelmingly in favor of rejecting the null hypothesis, if we set our
+level of significance to a=0.05, then this result does provide sufficient evidence to reject the null hypothesis.
+
+
+## Problem 3 (Verzani problem 9.16)
+*A one-sided, one-sample $t$-test will be performed. What sample size is needed to have a power of 0.80 for a significance level of 0.05 if `delta = 0.05` and the population standard deviation is assumed to be 5?*
+
+```{r, tidy = TRUE}
+
+power.t.test(power = 0.8, delta = 0.05, sd = 5, sig.level = 0.05, type = "one.sample", alternative = "one.sided")
+```
+To achieve a power of 0.80 with a significance level of 0.05 for a one-sided, one-sample t-test where the
+population standard deviation is assumed to be 5, we would need a sample size of 61827.
+
+
+## Problem 4 (Verzani problem 9.31)
+*For the `babies` (**UsingR**) data set, the variable `age` contains the recorded mom's age and `dage` contains the dad's age for several cases in the sample. Do a significance test of the null hypothesis of equal ages against a one-sided alternative that the dads are older in the sampled population.*
+
+```{r, tidy = TRUE}
+# Your code here
+#H_0: dage = age
+#H_a: dage > age
+
+#Check if data is normally distributed
+qqnorm(babies$dage - babies$age)
+qqline(babies$dage - babies$age)
+#The data appear to be normally distributed so we can continue with our test
+
+t.test(babies$dage, babies$age, paired = TRUE, alternative = "greater")
+#We get a p-value of 2.2 * 10^-16 which strongly supports rejecting the null hypothesis
+
+#For a rough check, lets look at means and medians of age and dage
+median(babies$dage) #Dad's age
+median(babies$age) #Mom's age
+
+mean(babies$dage) #Dad's age
+mean(babies$age) #Mom's age
+#And we see that the median and mean of dad age is greater than mom age, which is in line with our previous result
+```

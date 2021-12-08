@@ -1,0 +1,85 @@
+---
+title: "MATH 3070 Lab Project 7"
+author: "Harrison Webb"
+date: "October 20, 2021"
+output:
+  html_document:
+    toc: TRUE
+---
+
+*Remember: I expect to see commentary either in the text, in the code with comments created using `#`, or (preferably) both! **Failing to do so may result in lost points!***
+
+## Problem 1 (Verzani problem 5.6)
+*For the `batting` (**UsingR**) data set, make parallel boxplots of the batting average (`H/AB`) for each team. Which team had the greatest median average? (Use **lattice** functions for this problem.)*
+
+```{r, tidy=TRUE, error=TRUE}
+# Your code here
+library(UsingR)
+library(lattice)
+avg = batting$H / batting$AB
+bwplot(teamID~avg, data = batting)
+#we see from the plot that team ANA has the highest median batting average
+```
+
+## Problem 2 (Verzani problem 5.7)
+*For the `mtcars` data set, produce graphics of the following using **ggplot2**:*
+
+1. *Boxplots for miles per gallon (`mpg`) for groups defined by the number of gears (`gear`).*
+
+```{r, tidy=TRUE, error=TRUE}
+# Your code here
+library(ggplot2)
+summary(mtcars)
+p <- ggplot(mtcars, aes(y=mpg, x=gear)) + geom_boxplot(aes(group=gear)) + ggtitle("mpg of cars with 3, 4, and 5 gears") + theme_bw()
+p
+```
+
+3. *A scatterplot of `mpg` modeled by horsepower (`hp`). Create facets by the number of cylinders (`cyl`) and `gear`.*
+
+```{r, tidy=TRUE, error=TRUE}
+# Your code here
+library(ggplot2)
+p <- ggplot(mtcars) + geom_point(aes(x=hp, y=mpg, shape=factor(cyl), color=factor(gear))) + facet_grid(cyl ~ gear)
+p
+```
+
+## Problem 3
+*Using the `batting` data set (UsingR), create a visualization that does the following:*
+
+* *Plots the* rate *of intentional walks (that is, the number of intentional walks divided by the number of times a player was at bat; these are the `IBB` and `AB` variables in the data set, respectively) against the* rate *of home runs (the `HR` variable in the data set) as a scatterplot*
+
+* *Draws a trend line for these variables*
+
+* *Identifies and labels the outlier in the data set in these variables (easily spotted once the scatter plot is drawn)*
+
+*(Hint: `geom`-type functions can accept data arguments and will use the data set passed rather than the default for the chart. So for the third requirement, consider adding a text layer with `geom_text(data = ..., aes(...))` where the argument passed to `data` is a subset of the data set consisting of the outlier, and `aes(...)` defines how to label that outlier.)*
+
+```{r, tidy = TRUE, error=TRUE}
+# Your code here
+library(ggplot2)
+library(UsingR)
+outlier = data.frame(subset(batting, HR==46))
+rateWalks = batting$IBB / batting$AB
+
+p <- ggplot(batting, aes(x=HR, y=rateWalks)) +  geom_text(mapping = aes(label=ifelse(playerID=="bondsba01", "Barry Bonds", "")), hjust=1.1) +     
+      geom_point(aes(color = teamID)) + geom_smooth(method="lm", color="black", size=.5) + 
+      xlab("Rate of Home Runs") + ylab("Rate of Intentional Walks") + ggtitle("Rate of Intentional Walks vs Rate of Home Runs in Baseball")
+p
+head(batting)
+```
+
+## BONUS Problem
+*Reconsider the data set from a previous project containing data about the results of 2012 Olympics. I load the data in for you below:*
+
+```{r}
+#setwd("C:/Users/Chanel Roe/Desktop/MATH 3070 Fall 2018/Lecture_7") #you will need to change to working directory to your own computer.
+#olympic2012 <- read.csv("olympic-medals2012.csv")
+# Some variables are read in as strings when, in truth, they are numeric (they separate thousands with commas, leading to them being read as strings). I fix this below using the transform function, which allows for modifying columns in a data frame using methods similar to with.
+#olympic2012 <- transform(olympic2012, GDP.2011 = as.numeric(gsub(",", "", GDP.2011)), pop.2010 = as.numeric(gsub(",", "", pop.2010)))
+```
+
+*Use any plotting system (base R, **lattice**, **ggplot2**) to create plot involving at least three variables in the `olympic2012` data set. Explain the relationship you explored and any interesting findings. **Bonus points will be given for plots that I consider exceptionally clean, clear, and insightful, accompanied with good analyses of what you found.***
+
+```{r, tidy=TRUE, error=TRUE}
+# Your code here
+```

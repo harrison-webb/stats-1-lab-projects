@@ -1,0 +1,154 @@
+---
+title: "MATH 3070 Lab Lecture 5"
+author: "Conor Tillinghast"
+date: "September 20, 2018"
+output:
+  pdf_document:
+    toc: TRUE
+---
+
+## Working with Data Frames
+
+Data frames are such a key tool for R users that packages are written solely for the accessing and manipulation of data in data frames. Thus they deserve more discussion.
+
+Often we wish to work with multiple variables stored in a data frame, but while the `$` notation is convenient, even it can grow tiresome with complicated computations. The function `with()` can help simplify code. The first argument of `with()` is a data frame, and the second argument is a command to evaluate.
+
+```{r, tidy=TRUE}
+d <- mtcars[1:10,]
+# We wish to know which cars have mpg within the first and third quartile. Here's a first approach that is slightly cumbersome
+d[d$mpg > quantile(d$mpg, .25) & d$mpg < quantile(d$mpg, .75),]
+# We can use the with function to clean things up
+d[with(d, mpg > quantile(mpg, .25) & mpg < quantile(mpg, .75)),]
+```
+
+Often users don't want all the data in a data frame, but only a subset of it. The `which()` could be used to get the desired rows and a vector the desired columns, but this can quickly become cumbersome. Alternatively, use the `subset()` function for this task. The data frame is the first argument passed to `subset()`. Next, pass information to the `subset` parameter to decide on what rows to include, or the `select` parameter to choose the columns. Names of variables in the data frame can be used in `subset()` like in `with()`; you don't need to use `$` notation to choose the variable from within the data frame. Additionally, unlike when selecting with vectors, you can use `:` to choose all columns between two *names*, not just numbers, and you can use `-` in front of a vector of names to declare columns you *don't* want.
+
+```{r, tidy = TRUE}
+names(mtcars)
+# Notice that I do not list the names as strings
+subset(mtcars, select = c(mpg, cyl), subset = mpg > quantile(mpg, .9))
+# Other ways to select columns
+# Using : on column names selects columns between the names on either side
+subset(mtcars, select = hp:qsec, subset = !is.na(mpg) & mpg > quantile(mpg, .25) & mpg < quantile(mpg, .75) & cyl == 8)
+# Using - on a vector of names selects all columns except those in a vector
+subset(mtcars, select = -c(drat, wt, qsec), subset = !is.na(mpg) & mpg > quantile(mpg, .25) & mpg < quantile(mpg, .75) & cyl == 8)
+# Here is the above without using subset; notice how complicated the command is
+mtcars[!is.na(mtcars$mpg) & mtcars$mpg > quantile(mtcars$mpg, .25) & mtcars$mpg < quantile(mtcars$mpg, .75) & mtcars$cyl == 8, !(names(mtcars) %in% c("drat", "wt", "qsec"))]
+```
+
+There are many other details about working with data frames that are common parts of an analysts workflow, such as reshaping a data frame (keeping the same information stored in a data frame but changing the data frame's structure) and merging (combining information in two data frames). Read the textbook for more information and examples of these very important ideas. The entire process of bringing data into a workable format is called **data cleaning**, a significant and often underappreciated part of an analyst's job.
+
+## Applying a Function Over a Collection
+
+Often we wish to apply a function not to a single object or variable but instead a collection so we can get multiple values. For example, if we want all powers of two from one to ten, we could do so with the following:
+
+```{r}
+2^1:10
+```
+
+A similar idea is that we could take the square root of numbers between 0 and 1 with:
+
+```{r}
+sqrt(seq(0, 1, by = 0.1))
+```
+
+It may not be this simple though. For example, suppose we have a data frame, which I construct below:
+
+```{r, tidy=TRUE}
+library(MASS)
+cdat <- subset(Cars93, select = c(Min.Price, Price, Max.Price, MPG.city, MPG.highway, EngineSize, Horsepower, RPM))
+head(cdat)
+```
+
+I want the mean of all the variables in `cdat`. `mean(cdat)` will not work; the `mean()` function does not know how to handle the different variables in a data frame.
+
+We may instead try a `for` loop, like so:
+
+```{r, tidy=TRUE}
+# Make an empty vector
+cdat_means <- c()
+# This starts a for loop
+for (vec in cdat) {
+  # For every vector in cdat (called vec in the body of the loop), the code in the loop will be executed
+  # Compute the mean of vec, and add it to cdat_means
+  cdat_means <- c(cdat_means, mean(vec))
+}
+names(cdat_means) <- names(cdat)
+cdat_means
+```
+
+A good R programmer will try to avoid `for` loops as much as possible. One reason is that `for` loops in R are slow, unlike in other languages. Since R is an interpreted language and also includes many features for interacting with R and writing code easier, R programs are going to be slower than in other languages. This is the price R pays for being interactive and much easier to write code for than compiled languages like C, C++, or Java. (A lot of R functions run fast because the function is actually an interface for a function written in C, C++, or FORTRAN.) Another reason R programmers avoid `for` loops is that there is often an alternative not using a loop that easier to both write and understand.
+
+How could we rewrite the above code without using `for`? We could use the function `sapply()` and the call `sapply(v, f)`, where `v` is either a vector or list with the items you wish to iterate over, and `f` is a function to apply to each item. (Remember that a data frame is a list of vectors of equal length.) A vector is returned containing the result.
+
+```{r, tidy=TRUE}
+# A function to check if a number is even
+even <- function(x) {
+  # If x is divisible by 2 (the remainder is 0 when x is divided by 2), x is even and the result is TRUE. Otherwise, the result is FALSE.
+  x %% 2 == 0
+}
+
+# Which numbers between 1 and 10 are even?
+sapply(1:10, even)
+# The means of the vectors in cdat (remember that a data frame is a list of equal length vectors)
+sapply(cdat, mean)
+# We can pass sapply an anonymous function, which is an unnamed function passed as an argument to some other function, used for some evaluation. I illustrate below by passing to sapply a function that computes the range of each of the variables in cdat.
+sapply(cdat, function(vec) {diff(range(vec))})
+```
+
+The `lapply()` function works exactly like the `sapply()` function, except `lapply()` returns a list rather than a vector.
+
+Alternatively, if we have a function `f(x)` that knows how to work with an object `x`, we could **vectorize** `f` so it can work on a vector or list of objects like `x`. We can use the `Vectorize()` function for this task with a call like `vf <- Vectorize(f)`, where `f` is the function to vectorize, and `vf` is the new, vectorized version of `f`. The example below does what we did for `cdat` with both a `for` loop and `sapply()`, but now does so with a vectorized version of `mean()`.
+
+```{r}
+vmean <- Vectorize(mean)
+vmean(cdat)
+```
+
+Now suppose you have a data frame `d`, which contains information from different samples representing different populations. You wish to apply a function `f()` to data stored in `d$x`, and `d$y` determines which sample each row of the data frame (and thus, each entry of `d$x`) came from. You want `f()` to be applied to the data in each sample, separately. You can do so with the `aggregate()` function in a call of the form `aggregate(x ~ y, data = d, f)`. I illustrate with the `iris` dataset below.
+
+```{r, tidy = TRUE}
+# The struture of iris
+str(iris)
+# The mean sepal length by species of iris
+aggregate(Sepal.Length ~ Species, data=iris, mean)
+# The five-number summary of sepal length for each species of iris
+aggregate(Sepal.Length ~ Species, data=iris, quantile)
+```
+## Using External Data
+R would not be very useful if we had no way of loading in and saving data. R has means for reading data from spreadsheets such as `.xls` or `.xlsx` files made by Microsoft Excel. Functions for reading Excel files can be found in the **xlsx** or **gdata** packages.
+
+Common plain-text formats for reading data include the comma-separated values format (`.csv`), tab-separated values format (`.tsv`), and the fixed-width format (`.fwf`). These files can be read in using the `read.csv()`, `read.table()`, and the `read.fwf()` functions (with `read.csv()` being merely a front-end for `read.table()`). All of these functions parse a plain-text data file and return a data frame with the contents. Keep in mind that R will guess what type of data is stored in the file. Usually it makes a good guess, but this is not guaranteed and you may need to do some more data cleaning or give R more instructions on how to interpret the file.
+
+In order to load a file, you must specify the location of the file. If the file is on your hard drive, there are a few ways to do so:
+
+* You could use the `file.choose()` command to browse your system and locate the file. Once done, you will have a text string describing the location of the file on your system.
+
+* Any R session has a **working directory**, which is where R looks first for files. You can see the current working directory with `getwd()`, and change the working directory with `setwd(path)`, where `path` is a string for the location of the directory you wish to set as the new working directory.
+
+Let's assume we're loading in a `.csv` file (the approach is similar for other formats). The command `df <- read.csv("myfile.csv")` instructs R to read `myfile.csv` (which is presumably in the working directory, since we did not specify a full path; if it were not, we would either change the working directory or pass the full path to the function, which may look something like `read.csv("C:/path/to/myfile.csv")`, or `read.csv("/path/to/myfile.csv")`, depending on the system) and store the resulting data frame in `df`. Once done, `df` will now be ready for us to use.
+
+Suppose that the data file is on the Internet. You can pass the url of the file to `read.csv()` and R will read the file online and make it available to you in your session. I demonstrate below:
+
+```{r, tidy=TRUE, warning=FALSE}
+# Total Primary Energy Consumption by country and region, for years 1980 through 2008; in Quadrillion Btu (CSV Version). Dataset from data.gov, from the Department of Energy's dataset on total primary energy consumption.
+#set working directory
+#setwd("C:/Users/Conor Tillinghast/Desktop/MATH 3070 Fall 2018/Lecture_5")
+#getwd()
+# Download and load in the dataset
+energy <- read.csv("totalprimaryenergyconsumption.csv", stringsAsFactors = FALSE)
+# R did not parse everything correctly; turn some variables numeric
+energy[2:30] <- lapply(energy[2:30], as.numeric)
+# We want energy data for North American countries, from 2000 to 2008
+us_energy <- subset(energy, select = X2000:X2008, subset = Country %in% c("Canada", "United States", "Mexico"))
+us_energy
+```
+
+Naturally you can export data frames into common formats as well. `write.csv()`, `write.table()`, and `write.fwf()` will write data into comma-separated value, tab-separated value, and fixed width formats. Their syntax is similar. To save a `.csv` file, issue the command `write.csv(df, file = "myfile.csv")`, where `df` is the data frame to save and `file` where to save it, which could be just a file name (resulting in the file being saved in the working directory), or an absolute path.
+
+```{r, eval = FALSE}
+my_data <- data.frame(var1 = 1:10, var2 = paste("word", 1:10))
+write.csv(my_data, file="my_data.csv")
+```
+
+There are other formats R can read and write to. The **foreign** package allows R to read data files created for other statistical software packages such as SAS or Stata. The **XML** package allows R to read XML and HTML files. You can also read JSON files or data stored in Google Sheets. Refer to the textbook for more information.

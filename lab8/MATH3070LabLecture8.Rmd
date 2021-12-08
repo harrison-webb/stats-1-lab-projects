@@ -1,0 +1,118 @@
+---
+title: "MATH 3070 Lab Lecture 8"
+author: "Conor Tillinghast"
+date: "October 18, 2018"
+output:
+  pdf_document:
+    toc: TRUE
+---
+
+## Distribution Comparison
+A common problem is determining whether two distributions of two samples are the same. While statistical tests can help answer this question, visualization techniques are also quite effective. Many of the plots we have seen can be adapted to compare distributions from independent samples.
+
+One way to do so is to create two stem-and-leaf plots back-to-back, sharing common stems but having leaves from different data sets extending out in different directions. Base R will not do this, but the `stem.leaf.backback()` function in the **aplpack** package can create such a chart. `stem.leaf.backback(x, y)` will plot the distributions of the data in vectors `x` and `y` with a back-to-back stem-and-leaf plot. Here we use this function to examine the distribution of tooth lengths of guinea pigs given different supplements, contained in the `ToothGrowth` data set.
+
+```{r, tidy=TRUE}
+library(aplpack)
+str(ToothGrowth)
+# The split function can split data vectors depending on a factor. Here, split will split len in ToothGrowth depending on the factor variable supp, creating a list with the two variables we want
+len_split <- with(ToothGrowth, split(len, supp))
+OJ <- len_split$OJ; VC <- len_split$VC
+stem.leaf.backback(OJ, VC, rule.line = "Sturges")
+```
+
+We have seen comparative boxplots before; again, they can be quite useful for comparing distributions. Calling `boxplot(x, y)` with two data vectors `x` and `y` will compare the distributions of the data in the vectors `x` and `y` with a comparative boxplot.
+
+```{r}
+boxplot(OJ, VC)
+```
+
+We can also use density estimates to compare distributions, like so:
+
+```{r}
+plot(density(OJ), lty = 1)
+lines(density(VC), lty = 2)
+```
+
+## Model Formula Interface
+You have seen this interface before, and now we discuss it in more detail. The interface is `y ~ x`, or more descriptively, `response ~ predictor`. Loosely, we see the response variable as being dependent on the predictor, which could by a single variable, as in `y ~ x`, or a combination of variables, as in `y ~ x + z`. (`+` is overloaded to have a special meaning in the model formula interface, and thus does not necessarily mean "addition". If you wish to have `+` mean literal "addition", use the function `I()`, as in `y ~ I(x + z)`.) Many function in R use the formula interface, and often include additional arguments such as `data` (for specifying a data frame containing the data and variables described by the formula) and `subset` (used for selecting a subset of the data, according to some logical rule). Functions that use this formula interface include `boxplot()`, `lm()`, `summary()`, and **lattice** plotting functions.
+
+Below I demonstrate using `boxplot()`'s formula interface for exploring the `ToothGrowth` data more simply.
+
+```{r, tidy = TRUE}
+# Here, I plot the tooth growth data depending on supplement when dose == 0.5
+boxplot(len ~ supp, data = ToothGrowth, subset = dose == 0.5)
+# I can create a boxplot that depends on both supplement and dosage
+boxplot(len ~ supp + dose, data = ToothGrowth)
+```
+
+Here I compare means of tooth lengths using the formula interface in `summary()`, provided in the package **Hmisc**.
+
+```{r, tidy = TRUE}
+library(Hmisc)
+# First, the result of summary
+summary(len ~ supp + dose, data = ToothGrowth)
+# A nice plot of this information (though the table is very informative; a plot may not be necessary)
+plot(summary(len ~ supp + dose, data = ToothGrowth))
+```
+
+## Splitting and Stacking Data
+
+Consider the function `boxplot()`. We have seen two ways to make a parallel boxplot using `boxplot()`. One way is to have your data stored in separate vectors, say `x` and `y`, then call `boxplot(x, y)`. Another way is to have the data stored in a data frame, say `d`, that has two columns, say `v` and `g`. The variable `v` contains the data stored in the original vectors `x` and `y`, and the variable `g` identifies whether the data belongs to group `x` or group `y`. Then the function call `boxplot(v ~ g, data = d)` will produce the same graphic we described earlier.
+
+Which is the better approach? Here, there may not appear to be much difference. However, in other circumstances, it may be easier to have data stored in separate vectors or in a list containing those vectors (say, if you are using `sapply()` for looping), or it may be easier to have your data stored in "long form", where a data frame contains the actual data points in one column and another column identifies the group to which each data point belongs (for example, if you are plotting using `ggplot()`). Thus it's important to be able to transform data so it fits whichever format we need.
+
+There are two functions that allow for an easy transition between these two formats: `split()` and `stack()`. `split(v, g)` will create a list of vectors where each data point in `v` is included in a vector identified by the vector `g`. (Naturally, `v` and `g` must be the same length.) For example, if `tweet` is a vector of strings representing tweets by Twitter users, and `user` is a vector that identifies the user who wrote each tweet stored in `tweet`, then `l <- split(tweet, user)` will create a list `l` with vectors for each unique user in `user`, each vector in the list containing the respective user's tweets. So if `NTGuardian` is one of the users, `l$NTGuardian` is the vector containing NTGuardian's tweets.
+
+Let's try this out on the `iris` data, where the `Sepal.Length` variable identifies sepal lengths of iris flowers, and `Species` identifies the species of each flower in the sample. Currently the data is in long form, so let's separate it into separate vectors.
+
+```{r, tidy=TRUE}
+# A look at the data
+head(iris)
+# It's in long form; let's change that
+l <- split(iris$Sepal.Length, iris$Species)
+l
+# l can be used in sapply; say, we want the median sepal length for each flower
+sapply(l, median)
+# If we want the variables in the working environment, we will need to assign them to vectors manually
+setosa <- l$setosa
+versicolor <- l$versicolor
+virginica <- l$virginica
+# Make a density plot comparing the distributions
+plot(density(virginica), lty = 1, ylim = c(0, 1.5))
+lines(density(versicolor), lty = 2)
+lines(density(setosa), lty = 3)
+
+# This task lends naturally to the formula interface, and the DescTools package provides this interface
+
+#install.packages('DescTools')
+library(DescTools)
+# Notice this produces the same result as the earlier call
+l2 <- split(Sepal.Length ~ Species, data = iris)
+l2
+```
+
+`stack()` does the opposite of `split()`. `stack()` takes a list of vectors, named according to the group to which they belong, and returns a data frame with a column for the data and a column identifying the group to which each data point belongs. So if `l` is a list produced by split, `stack(l)` will return the data into the original long form format. Another example: if `ff` is a vector that contains the weight of boxes of Frosted Flakes cereals, `trx` a vector that contains the weights of boxes of Trix cereal, and `ccp` a vector that contains weights of boxes of Cocoa Puffs, then `df <- stack(list("ff" = ff, "trx" = trx, "ccp" = ccp))` will create a data frame with a column containing weights of cereal boxes and a column containing the type of cereal.
+
+Usage of `stack()` is demonstrated below.
+
+```{r, tidy=TRUE}
+# Recall setosa, versicolor, and verginica from before; let's reconstruct the data frame with which we made them.
+setosa
+versicolor
+virginica
+df <- stack(list("setosa" = setosa, "versicolor" = versicolor, "virginica" = virginica))
+head(df)
+# This is the ideal format for ggplot
+library(ggplot2)
+ggplot(df, aes(x = ind, y = values)) + geom_boxplot()
+# To see that stack basically undoes what was done by split
+head(ToothGrowth)
+l <- with(ToothGrowth, split(len, supp))
+l
+is.list(l)
+df2 <- stack(l)
+head(df2)
+```
+
+
